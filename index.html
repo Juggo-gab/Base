@@ -15,11 +15,12 @@
   --radius:14px;
 }
 @media (prefers-color-scheme:dark){
-  :root{--bg:#0f1117;--card:#1a1d27;--text:#e8e9ee;--muted:#9aa0ad;--line:#2a2e3a;--primary:#818cf8;--green:#4ade80;--red:#f87171;--amber:#fbbf24}
+  :root:not([data-theme="light"]){--bg:#0f1117;--card:#1a1d27;--text:#e8e9ee;--muted:#9aa0ad;--line:#2a2e3a;--primary:#818cf8;--green:#4ade80;--red:#f87171;--amber:#fbbf24;color-scheme:dark}
 }
+:root[data-theme="dark"]{--bg:#0f1117;--card:#1a1d27;--text:#e8e9ee;--muted:#9aa0ad;--line:#2a2e3a;--primary:#818cf8;--green:#4ade80;--red:#f87171;--amber:#fbbf24;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.5}
-header{position:sticky;top:0;z-index:5;background:var(--primary);color:#fff;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top))}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--primary);color:#fff;padding:14px 16px}
 header h1{margin:0;font-size:20px}
 main{max-width:760px;margin:0 auto;padding:16px 16px 100px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
@@ -61,7 +62,13 @@ ul.list li:last-child{border-bottom:0}
 .week button.on{background:var(--green);color:#fff;border-color:var(--green)}
 .timer{font-size:48px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:8px 0}
 .tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--line);color:var(--text);white-space:nowrap}
-.hidden{display:none}
+.hidden{display:none!important}
+.del.sure{color:#fff;background:var(--red);border-radius:8px;font-size:13px;font-weight:600}
+.goalAdd{display:flex;gap:4px;flex:none}
+.goalAdd input{width:70px;padding:6px 8px}
+.goalAdd button{width:auto;padding:6px 10px}
+textarea{font:13px ui-monospace,monospace;width:100%;min-height:120px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;z-index:20;max-width:calc(100% - 32px);text-align:center}
 </style>
 </head>
 <body>
@@ -204,6 +211,16 @@ ul.list li:last-child{border-bottom:0}
       <button class="ghost" id="importBtn" style="flex:1">⬆ Importar</button>
     </div>
     <input type="file" id="importFile" accept="application/json" class="hidden">
+    <div id="exportBox" class="hidden" style="margin-top:12px;display:grid;gap:8px">
+      <small style="color:var(--muted)">Copie o texto abaixo e guarde (ex: no WhatsApp ou e-mail).</small>
+      <textarea id="exportText" readonly></textarea>
+      <button class="ghost" id="copyBtn" style="width:100%">📋 Copiar</button>
+    </div>
+    <div style="margin-top:12px;display:grid;gap:8px">
+      <small style="color:var(--muted)">Ou cole aqui um backup copiado:</small>
+      <textarea id="pasteText" placeholder='{"tx": [...]}'></textarea>
+      <button class="ghost" id="pasteBtn" style="width:100%">⬆ Restaurar backup colado</button>
+    </div>
   </div>
   <div class="card">
     <h2>📱 Instalar no celular</h2>
@@ -214,6 +231,7 @@ ul.list li:last-child{border-bottom:0}
   </div>
 </section>
 </main>
+<div id="toast" class="hidden"></div>
 
 <script>
 // ---------- Dados ----------
@@ -232,6 +250,19 @@ const today = () => iso(new Date());
 const fmtDate = s => s.split('-').reverse().join('/');
 const empty = t => `<li class="empty">${t}</li>`;
 const formData = f => Object.fromEntries(new FormData(f));
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.remove('hidden');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.add('hidden'), 2500);
+}
+// Botão de confirmação em 2 toques (sem janelas do navegador)
+function sure(btn, label) {
+  if (btn.classList.contains('sure')) return true;
+  const old = btn.textContent;
+  btn.classList.add('sure'); btn.textContent = label || 'Excluir?';
+  setTimeout(() => { btn.classList.remove('sure'); btn.textContent = old; }, 3000);
+  return false;
+}
 
 // ---------- Abas ----------
 const titles = { fin: '💰 Finanças', pes: '🎯 Pessoal', rot: '🔁 Rotina', est: '📚 Estudos', cfg: '⚙️ Backup' };
@@ -307,7 +338,8 @@ function renderGoals() {
     return `<li><div class="grow"><b>${esc(g.text)}</b>
       <small>${g.current} / ${g.target} ${esc(g.unit)} · ${p}%${p >= 100 ? ' 🏆' : ''}</small>
       <div class="bar"><i style="width:${p}%;${p >= 100 ? 'background:var(--green)' : ''}"></i></div></div>
-      <button class="ghost" data-goal="${g.id}">+ / −</button>
+      <div class="goalAdd"><input type="number" id="ga-${g.id}" value="1" aria-label="Quantidade">
+      <button class="ghost" data-goal="${g.id}" title="Somar (use negativo para tirar)">+</button></div>
       <button class="del" data-del="goals:${g.id}">✕</button></li>`;
   }).join('') : empty('Nenhuma meta ainda');
 }
@@ -360,7 +392,7 @@ $('#subjForm').onsubmit = e => {
 $('#studyForm').onsubmit = e => {
   e.preventDefault();
   const d = formData(e.target);
-  if (!d.subj) return alert('Crie uma matéria primeiro.');
+  if (!d.subj) return toast('Crie uma matéria primeiro.');
   addSession(d.subj, +d.min, d.note);
   e.target.reset();
 };
@@ -401,7 +433,7 @@ let left = POMO, timer = null;
 const drawPomo = () => $('#pomoTime').textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
 $('#pomoStart').onclick = () => {
   if (timer) { clearInterval(timer); timer = null; $('#pomoStart').textContent = '▶ Continuar'; return; }
-  if (!$('#pomoSubj').value) return alert('Crie uma matéria primeiro.');
+  if (!$('#pomoSubj').value) return toast('Crie uma matéria primeiro.');
   const end = Date.now() + left * 1000;
   $('#pomoStart').textContent = '⏸ Pausar';
   timer = setInterval(() => {
@@ -411,7 +443,7 @@ $('#pomoStart').onclick = () => {
       addSession($('#pomoSubj').value, 25, 'Pomodoro');
       left = POMO; drawPomo(); $('#pomoStart').textContent = '▶ Iniciar';
       if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
-      alert('⏰ Pomodoro concluído! Faça uma pausa de 5 min.');
+      toast('⏰ Pomodoro concluído! Pausa de 5 min.');
     }
   }, 500);
 };
@@ -421,7 +453,7 @@ $('#pomoReset').onclick = () => { clearInterval(timer); timer = null; left = POM
 document.addEventListener('click', e => {
   const t = e.target;
   if (t.dataset.del) {
-    if (!confirm('Excluir este item?')) return;
+    if (!sure(t)) return;
     const [col, id] = t.dataset.del.split(':');
     db[col] = db[col].filter(x => x.id !== id);
     save(); renderAll();
@@ -431,8 +463,8 @@ document.addEventListener('click', e => {
     toggleHabit(t.dataset.habit);
   } else if (t.dataset.goal) {
     const g = db.goals.find(x => x.id === t.dataset.goal);
-    const v = prompt(`Quanto somar? (use negativo para tirar)\nAtual: ${g.current} ${g.unit}`, '1');
-    if (v !== null && !isNaN(+v)) { g.current = Math.max(0, g.current + +v); save(); renderGoals(); }
+    const v = +$('#ga-' + g.id).value;
+    if (v) { g.current = Math.max(0, g.current + v); save(); renderGoals(); }
   }
 });
 
@@ -441,20 +473,27 @@ $('#exportBtn').onclick = () => {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }));
   a.download = `minha-vida-backup-${today()}.json`;
-  a.click();
+  try { a.click(); } catch {}
+  $('#exportText').value = JSON.stringify(db);
+  $('#exportBox').classList.remove('hidden');
 };
+$('#copyBtn').onclick = () => {
+  const ta = $('#exportText');
+  navigator.clipboard.writeText(ta.value).then(() => toast('Copiado ✅'), () => { ta.select(); toast('Selecionado: copie com Ctrl+C'); });
+};
+function restore(text) {
+  try { db = Object.assign(blank(), JSON.parse(text)); save(); renderAll(); toast('Backup restaurado ✅'); }
+  catch { toast('Backup inválido.'); }
+}
+$('#pasteBtn').onclick = () => { restore($('#pasteText').value); $('#pasteText').value = ''; };
 $('#importBtn').onclick = () => $('#importFile').click();
 $('#importFile').onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
-  try {
-    const data = JSON.parse(await f.text());
-    if (!confirm('Substituir os dados atuais pelo backup?')) return;
-    db = Object.assign(blank(), data); save(); renderAll(); alert('Backup importado ✅');
-  } catch { alert('Arquivo inválido.'); }
+  restore(await f.text());
   e.target.value = '';
 };
-$('#wipeBtn').onclick = () => {
-  if (confirm('Apagar TODOS os dados? Isso não pode ser desfeito.')) { db = blank(); save(); renderAll(); }
+$('#wipeBtn').onclick = e => {
+  if (sure(e.target, 'Toque de novo para apagar TUDO')) { db = blank(); save(); renderAll(); toast('Dados apagados'); }
 };
 
 // ---------- Início ----------
