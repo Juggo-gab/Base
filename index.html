@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minha Vida</title>
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{
+  --bg:#f5f6fa;--card:#fff;--text:#1f2330;--muted:#6b7280;--line:#e5e7eb;
+  --primary:#4f46e5;--green:#16a34a;--red:#dc2626;--amber:#d97706;
+  --radius:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0f1117;--card:#1a1d27;--text:#e8e9ee;--muted:#9aa0ad;--line:#2a2e3a;--primary:#818cf8;--green:#4ade80;--red:#f87171;--amber:#fbbf24}
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.5}
+header{position:sticky;top:0;z-index:5;background:var(--primary);color:#fff;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top))}
+header h1{margin:0;font-size:20px}
+main{max-width:760px;margin:0 auto;padding:16px 16px 100px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:10px 4px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+nav button span{font-size:22px}
+nav button.on{color:var(--primary);font-weight:700}
+@media (min-width:800px){
+  nav{position:sticky;top:0;bottom:auto;max-width:760px;margin:0 auto;border:0;background:transparent}
+  nav button{flex-direction:row;justify-content:center;font-size:15px;gap:6px;border-bottom:3px solid transparent}
+  nav button.on{border-color:var(--primary)}
+  main{padding-bottom:40px}
+}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card h2{margin:0 0 12px;font-size:17px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border-radius:var(--radius);padding:12px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:12px}
+.stat b{font-size:17px}
+.pos{color:var(--green)}.neg{color:var(--red)}
+form{display:grid;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:120px}
+input,select,button{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);width:100%}
+button.btn{background:var(--primary);color:#fff;border:0;font-weight:600;cursor:pointer}
+button.ghost{background:none;border:1px solid var(--line);cursor:pointer;width:auto}
+ul.list{list-style:none;margin:0;padding:0}
+ul.list li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+ul.list li:last-child{border-bottom:0}
+.grow{flex:1;min-width:0}
+.grow small{color:var(--muted);display:block;font-size:13px}
+.del{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;width:auto;padding:4px 8px}
+.chk{width:26px;height:26px;flex:none;accent-color:var(--primary)}
+.done .grow b{text-decoration:line-through;color:var(--muted)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--primary)}
+.empty{color:var(--muted);text-align:center;padding:12px 0;font-size:14px}
+.week{display:flex;gap:4px}
+.week button{width:30px;height:30px;padding:0;border-radius:8px;font-size:11px;cursor:pointer}
+.week button.on{background:var(--green);color:#fff;border-color:var(--green)}
+.timer{font-size:48px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:8px 0}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--line);color:var(--text);white-space:nowrap}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header><h1 id="title">💰 Finanças</h1></header>
+
+<nav id="nav">
+  <button data-tab="fin" class="on"><span>💰</span>Finanças</button>
+  <button data-tab="pes"><span>🎯</span>Pessoal</button>
+  <button data-tab="rot"><span>🔁</span>Rotina</button>
+  <button data-tab="est"><span>📚</span>Estudos</button>
+  <button data-tab="cfg"><span>⚙️</span>Backup</button>
+</nav>
+
+<main>
+<!-- FINANÇAS -->
+<section id="fin">
+  <div class="card">
+    <div class="row">
+      <input type="month" id="finMonth">
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><small>Entradas</small><b class="pos" id="finIn">R$ 0</b></div>
+    <div class="stat"><small>Saídas</small><b class="neg" id="finOut">R$ 0</b></div>
+    <div class="stat"><small>Saldo</small><b id="finBal">R$ 0</b></div>
+  </div>
+  <div class="card">
+    <h2>➕ Nova transação</h2>
+    <form id="finForm">
+      <div class="row">
+        <select name="type"><option value="out">Saída</option><option value="in">Entrada</option></select>
+        <input name="value" type="number" step="0.01" min="0" placeholder="Valor (R$)" required>
+      </div>
+      <input name="desc" placeholder="Descrição (ex: mercado)" required>
+      <div class="row">
+        <select name="cat">
+          <option>Alimentação</option><option>Moradia</option><option>Transporte</option>
+          <option>Lazer</option><option>Saúde</option><option>Educação</option>
+          <option>Salário</option><option>Outros</option>
+        </select>
+        <input name="date" type="date" required>
+      </div>
+      <button class="btn">Salvar</button>
+    </form>
+  </div>
+  <div class="card"><h2>📊 Gastos por categoria</h2><ul class="list" id="finCats"></ul></div>
+  <div class="card"><h2>📋 Transações do mês</h2><ul class="list" id="finList"></ul></div>
+</section>
+
+<!-- PESSOAL -->
+<section id="pes" class="hidden">
+  <div class="card">
+    <h2>✅ Tarefas</h2>
+    <form id="taskForm">
+      <div class="row">
+        <input name="text" placeholder="Nova tarefa" required>
+        <select name="prio"><option value="2">Normal</option><option value="1">🔥 Urgente</option><option value="3">Baixa</option></select>
+      </div>
+      <button class="btn">Adicionar</button>
+    </form>
+    <ul class="list" id="taskList"></ul>
+  </div>
+  <div class="card">
+    <h2>🎯 Metas</h2>
+    <form id="goalForm">
+      <input name="text" placeholder="Meta (ex: juntar R$ 5.000)" required>
+      <div class="row">
+        <input name="target" type="number" min="1" placeholder="Alvo (número)" required>
+        <input name="unit" placeholder="Unidade (R$, kg, livros)">
+      </div>
+      <button class="btn">Adicionar meta</button>
+    </form>
+    <ul class="list" id="goalList"></ul>
+  </div>
+</section>
+
+<!-- ROTINA -->
+<section id="rot" class="hidden">
+  <div class="card">
+    <h2>🔁 Hábitos diários</h2>
+    <form id="habitForm">
+      <div class="row">
+        <input name="text" placeholder="Hábito (ex: beber 2L de água)" required>
+        <input name="time" type="time" title="Horário (opcional)">
+      </div>
+      <button class="btn">Adicionar hábito</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>📅 Hoje — <span id="todayLbl"></span></h2>
+    <div class="bar"><i id="habitBar" style="width:0"></i></div>
+    <ul class="list" id="habitList"></ul>
+  </div>
+</section>
+
+<!-- ESTUDOS -->
+<section id="est" class="hidden">
+  <div class="card">
+    <h2>⏱️ Pomodoro</h2>
+    <select id="pomoSubj"></select>
+    <div class="timer" id="pomoTime">25:00</div>
+    <div class="row">
+      <button class="btn" id="pomoStart">▶ Iniciar</button>
+      <button class="ghost" id="pomoReset" style="flex:1">↺ Zerar</button>
+    </div>
+    <small style="color:var(--muted)">Ao terminar, 25 min são registrados na matéria.</small>
+  </div>
+  <div class="card">
+    <h2>📝 Registrar estudo</h2>
+    <form id="studyForm">
+      <div class="row">
+        <select name="subj" id="studySubj" required></select>
+        <input name="min" type="number" min="1" placeholder="Minutos" required>
+      </div>
+      <input name="note" placeholder="O que estudou? (opcional)">
+      <button class="btn">Registrar</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>📚 Matérias</h2>
+    <form id="subjForm">
+      <div class="row">
+        <input name="name" placeholder="Nova matéria" required>
+        <input name="goal" type="number" min="0" placeholder="Meta h/semana">
+      </div>
+      <button class="btn">Adicionar matéria</button>
+    </form>
+    <ul class="list" id="subjList"></ul>
+  </div>
+  <div class="card"><h2>🕑 Últimas sessões</h2><ul class="list" id="studyList"></ul></div>
+</section>
+
+<!-- BACKUP -->
+<section id="cfg" class="hidden">
+  <div class="card">
+    <h2>💾 Backup</h2>
+    <p style="color:var(--muted);margin-top:0">Os dados ficam salvos só neste aparelho. Exporte para guardar ou passar para outro aparelho.</p>
+    <div class="row">
+      <button class="btn" id="exportBtn">⬇ Exportar</button>
+      <button class="ghost" id="importBtn" style="flex:1">⬆ Importar</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" class="hidden">
+  </div>
+  <div class="card">
+    <h2>📱 Instalar no celular</h2>
+    <p style="margin:0;color:var(--muted)">Android (Chrome): menu ⋮ → <b>Instalar app</b>.<br>iPhone (Safari): Compartilhar → <b>Adicionar à Tela de Início</b>.</p>
+  </div>
+  <div class="card">
+    <button class="ghost" id="wipeBtn" style="width:100%;color:var(--red)">🗑 Apagar todos os dados</button>
+  </div>
+</section>
+</main>
+
+<script>
+// ---------- Dados ----------
+const KEY = 'minhaVida.v1';
+const blank = () => ({ tx: [], tasks: [], goals: [], habits: [], subjects: [], sessions: [] });
+let db;
+try { db = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { db = blank(); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
+
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const brl = n => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+const today = () => iso(new Date());
+const fmtDate = s => s.split('-').reverse().join('/');
+const empty = t => `<li class="empty">${t}</li>`;
+const formData = f => Object.fromEntries(new FormData(f));
+
+// ---------- Abas ----------
+const titles = { fin: '💰 Finanças', pes: '🎯 Pessoal', rot: '🔁 Rotina', est: '📚 Estudos', cfg: '⚙️ Backup' };
+function showTab(t) {
+  document.querySelectorAll('main>section').forEach(s => s.classList.toggle('hidden', s.id !== t));
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('#title').textContent = titles[t];
+  try { localStorage.setItem(KEY + '.tab', t); } catch {}
+  window.scrollTo(0, 0);
+}
+$('#nav').onclick = e => { const b = e.target.closest('button'); if (b) showTab(b.dataset.tab); };
+
+// ---------- Finanças ----------
+$('#finMonth').value = today().slice(0, 7);
+$('#finForm').date.value = today();
+$('#finMonth').onchange = renderFin;
+$('#finForm').onsubmit = e => {
+  e.preventDefault();
+  const d = formData(e.target);
+  db.tx.push({ id: uid(), type: d.type, value: +d.value, desc: d.desc, cat: d.cat, date: d.date });
+  save(); e.target.reset(); e.target.date.value = today(); renderFin();
+};
+function renderFin() {
+  const m = $('#finMonth').value;
+  const list = db.tx.filter(t => t.date.startsWith(m)).sort((a, b) => b.date.localeCompare(a.date));
+  const inc = list.filter(t => t.type === 'in').reduce((s, t) => s + t.value, 0);
+  const out = list.filter(t => t.type === 'out').reduce((s, t) => s + t.value, 0);
+  $('#finIn').textContent = brl(inc);
+  $('#finOut').textContent = brl(out);
+  $('#finBal').textContent = brl(inc - out);
+  $('#finBal').className = inc - out >= 0 ? 'pos' : 'neg';
+
+  const cats = {};
+  list.filter(t => t.type === 'out').forEach(t => cats[t.cat] = (cats[t.cat] || 0) + t.value);
+  const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+  $('#finCats').innerHTML = sorted.length ? sorted.map(([c, v]) => `
+    <li><div class="grow"><b>${esc(c)}</b> <small>${brl(v)} · ${Math.round(v / out * 100)}%</small>
+    <div class="bar"><i style="width:${v / out * 100}%;background:var(--red)"></i></div></div></li>`).join('')
+    : empty('Sem gastos neste mês');
+
+  $('#finList').innerHTML = list.length ? list.map(t => `
+    <li><div class="grow"><b>${esc(t.desc)}</b><small>${fmtDate(t.date)} · ${esc(t.cat)}</small></div>
+    <b class="${t.type === 'in' ? 'pos' : 'neg'}">${t.type === 'in' ? '+' : '−'} ${brl(t.value)}</b>
+    <button class="del" data-del="tx:${t.id}" title="Excluir">✕</button></li>`).join('')
+    : empty('Nenhuma transação neste mês');
+}
+
+// ---------- Pessoal ----------
+$('#taskForm').onsubmit = e => {
+  e.preventDefault();
+  const d = formData(e.target);
+  db.tasks.push({ id: uid(), text: d.text, prio: +d.prio, done: false });
+  save(); e.target.reset(); renderTasks();
+};
+function renderTasks() {
+  const list = [...db.tasks].sort((a, b) => a.done - b.done || a.prio - b.prio);
+  const lbl = { 1: '<span class="tag" style="background:var(--red);color:#fff">Urgente</span>', 2: '', 3: '<span class="tag">Baixa</span>' };
+  $('#taskList').innerHTML = list.length ? list.map(t => `
+    <li class="${t.done ? 'done' : ''}"><input type="checkbox" class="chk" data-task="${t.id}" ${t.done ? 'checked' : ''}>
+    <div class="grow"><b>${esc(t.text)}</b></div>${lbl[t.prio]}
+    <button class="del" data-del="tasks:${t.id}">✕</button></li>`).join('')
+    : empty('Nenhuma tarefa 🎉');
+}
+$('#goalForm').onsubmit = e => {
+  e.preventDefault();
+  const d = formData(e.target);
+  db.goals.push({ id: uid(), text: d.text, target: +d.target, unit: d.unit || '', current: 0 });
+  save(); e.target.reset(); renderGoals();
+};
+function renderGoals() {
+  $('#goalList').innerHTML = db.goals.length ? db.goals.map(g => {
+    const p = Math.min(100, Math.round(g.current / g.target * 100));
+    return `<li><div class="grow"><b>${esc(g.text)}</b>
+      <small>${g.current} / ${g.target} ${esc(g.unit)} · ${p}%${p >= 100 ? ' 🏆' : ''}</small>
+      <div class="bar"><i style="width:${p}%;${p >= 100 ? 'background:var(--green)' : ''}"></i></div></div>
+      <button class="ghost" data-goal="${g.id}">+ / −</button>
+      <button class="del" data-del="goals:${g.id}">✕</button></li>`;
+  }).join('') : empty('Nenhuma meta ainda');
+}
+
+// ---------- Rotina ----------
+$('#habitForm').onsubmit = e => {
+  e.preventDefault();
+  const d = formData(e.target);
+  db.habits.push({ id: uid(), text: d.text, time: d.time || '', days: [] });
+  save(); e.target.reset(); renderHabits();
+};
+function streak(h) {
+  let n = 0; const d = new Date();
+  if (!h.days.includes(iso(d))) d.setDate(d.getDate() - 1);
+  while (h.days.includes(iso(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function renderHabits() {
+  const t = today();
+  $('#todayLbl').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+  const list = [...db.habits].sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
+  const done = list.filter(h => h.days.includes(t)).length;
+  $('#habitBar').style.width = list.length ? done / list.length * 100 + '%' : 0;
+  const week = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d; });
+  $('#habitList').innerHTML = list.length ? list.map(h => `
+    <li style="flex-wrap:wrap" class="${h.days.includes(t) ? 'done' : ''}">
+      <input type="checkbox" class="chk" data-habit="${h.id}:${t}" ${h.days.includes(t) ? 'checked' : ''}>
+      <div class="grow"><b>${h.time ? h.time + ' · ' : ''}${esc(h.text)}</b><small>🔥 ${streak(h)} dia(s) seguidos</small></div>
+      <button class="del" data-del="habits:${h.id}">✕</button>
+      <div class="week" style="width:100%;padding-left:36px">${week.map(d => {
+        const k = iso(d);
+        return `<button class="${h.days.includes(k) ? 'on' : ''}" data-habit="${h.id}:${k}" title="${fmtDate(k)}">${'DSTQQSS'[d.getDay()]}</button>`;
+      }).join('')}</div></li>`).join('')
+    : empty('Adicione seus hábitos acima');
+}
+function toggleHabit(v) {
+  const [id, day] = v.split(':');
+  const h = db.habits.find(x => x.id === id);
+  h.days = h.days.includes(day) ? h.days.filter(x => x !== day) : [...h.days, day];
+  save(); renderHabits();
+}
+
+// ---------- Estudos ----------
+$('#subjForm').onsubmit = e => {
+  e.preventDefault();
+  const d = formData(e.target);
+  db.subjects.push({ id: uid(), name: d.name, goal: +d.goal || 0 });
+  save(); e.target.reset(); renderStudy();
+};
+$('#studyForm').onsubmit = e => {
+  e.preventDefault();
+  const d = formData(e.target);
+  if (!d.subj) return alert('Crie uma matéria primeiro.');
+  addSession(d.subj, +d.min, d.note);
+  e.target.reset();
+};
+function addSession(subj, min, note = '') {
+  db.sessions.push({ id: uid(), subj, min, note, date: today() });
+  save(); renderStudy();
+}
+function renderStudy() {
+  const opts = db.subjects.length ? db.subjects.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('') : '<option value="">— crie uma matéria —</option>';
+  const keep = $('#pomoSubj').value;
+  $('#pomoSubj').innerHTML = opts; $('#studySubj').innerHTML = opts;
+  if (keep) $('#pomoSubj').value = keep;
+
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
+  const wk = iso(weekAgo);
+  $('#subjList').innerHTML = db.subjects.length ? db.subjects.map(s => {
+    const all = db.sessions.filter(x => x.subj === s.id);
+    const total = all.reduce((a, x) => a + x.min, 0);
+    const week = all.filter(x => x.date >= wk).reduce((a, x) => a + x.min, 0);
+    const p = s.goal ? Math.min(100, Math.round(week / (s.goal * 60) * 100)) : 0;
+    return `<li><div class="grow"><b>${esc(s.name)}</b>
+      <small>7 dias: ${(week / 60).toFixed(1)}h${s.goal ? ` de ${s.goal}h (${p}%)` : ''} · Total: ${(total / 60).toFixed(1)}h</small>
+      ${s.goal ? `<div class="bar"><i style="width:${p}%"></i></div>` : ''}</div>
+      <button class="del" data-del="subjects:${s.id}">✕</button></li>`;
+  }).join('') : empty('Nenhuma matéria ainda');
+
+  const name = id => (db.subjects.find(s => s.id === id) || { name: '(removida)' }).name;
+  const last = [...db.sessions].reverse().slice(0, 15);
+  $('#studyList').innerHTML = last.length ? last.map(x => `
+    <li><div class="grow"><b>${esc(name(x.subj))}</b><small>${fmtDate(x.date)}${x.note ? ' · ' + esc(x.note) : ''}</small></div>
+    <span class="tag">${x.min} min</span><button class="del" data-del="sessions:${x.id}">✕</button></li>`).join('')
+    : empty('Nenhuma sessão registrada');
+}
+
+// Pomodoro
+const POMO = 25 * 60;
+let left = POMO, timer = null;
+const drawPomo = () => $('#pomoTime').textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+$('#pomoStart').onclick = () => {
+  if (timer) { clearInterval(timer); timer = null; $('#pomoStart').textContent = '▶ Continuar'; return; }
+  if (!$('#pomoSubj').value) return alert('Crie uma matéria primeiro.');
+  const end = Date.now() + left * 1000;
+  $('#pomoStart').textContent = '⏸ Pausar';
+  timer = setInterval(() => {
+    left = Math.max(0, Math.round((end - Date.now()) / 1000)); drawPomo();
+    if (!left) {
+      clearInterval(timer); timer = null;
+      addSession($('#pomoSubj').value, 25, 'Pomodoro');
+      left = POMO; drawPomo(); $('#pomoStart').textContent = '▶ Iniciar';
+      if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+      alert('⏰ Pomodoro concluído! Faça uma pausa de 5 min.');
+    }
+  }, 500);
+};
+$('#pomoReset').onclick = () => { clearInterval(timer); timer = null; left = POMO; drawPomo(); $('#pomoStart').textContent = '▶ Iniciar'; };
+
+// ---------- Ações gerais (excluir, marcar) ----------
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (t.dataset.del) {
+    if (!confirm('Excluir este item?')) return;
+    const [col, id] = t.dataset.del.split(':');
+    db[col] = db[col].filter(x => x.id !== id);
+    save(); renderAll();
+  } else if (t.dataset.task) {
+    const k = db.tasks.find(x => x.id === t.dataset.task); k.done = !k.done; save(); renderTasks();
+  } else if (t.dataset.habit) {
+    toggleHabit(t.dataset.habit);
+  } else if (t.dataset.goal) {
+    const g = db.goals.find(x => x.id === t.dataset.goal);
+    const v = prompt(`Quanto somar? (use negativo para tirar)\nAtual: ${g.current} ${g.unit}`, '1');
+    if (v !== null && !isNaN(+v)) { g.current = Math.max(0, g.current + +v); save(); renderGoals(); }
+  }
+});
+
+// ---------- Backup ----------
+$('#exportBtn').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }));
+  a.download = `minha-vida-backup-${today()}.json`;
+  a.click();
+};
+$('#importBtn').onclick = () => $('#importFile').click();
+$('#importFile').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!confirm('Substituir os dados atuais pelo backup?')) return;
+    db = Object.assign(blank(), data); save(); renderAll(); alert('Backup importado ✅');
+  } catch { alert('Arquivo inválido.'); }
+  e.target.value = '';
+};
+$('#wipeBtn').onclick = () => {
+  if (confirm('Apagar TODOS os dados? Isso não pode ser desfeito.')) { db = blank(); save(); renderAll(); }
+};
+
+// ---------- Início ----------
+function renderAll() { renderFin(); renderTasks(); renderGoals(); renderHabits(); renderStudy(); }
+renderAll();
+let tab = 'fin'; try { tab = localStorage.getItem(KEY + '.tab') || 'fin'; } catch {}
+showTab(titles[tab] ? tab : 'fin');
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
