@@ -1,5 +1,5 @@
 // Cache simples para o app funcionar offline
-const CACHE = 'minha-vida-v1';
+const CACHE = 'dayri-v2';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg'];
 
 self.addEventListener('install', e => {

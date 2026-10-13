@@ -1,23 +1,22 @@
-# Minha Vida 📱💻
+# Dayri
 
-App simples para **PC e celular** (PWA). Funciona offline. Sem login.
+App pessoal para **PC e celular** (PWA). Funciona offline. Sem login.
 
-| Aba | O que faz |
+| Tela | O que faz |
 |---|---|
-| 💰 Finanças | Entradas, saídas, saldo do mês, gastos por categoria |
-| 🎯 Pessoal | Tarefas (com prioridade) e metas com barra de progresso |
-| 🔁 Rotina | Hábitos diários, sequência 🔥 e últimos 7 dias |
-| 📚 Estudos | Matérias, meta semanal, Pomodoro de 25 min, histórico |
-| ⚙️ Backup | Exportar / importar dados (JSON) |
+| Início | Saldo, entradas × saídas (6 meses), metas do dia, backup |
+| Finanças | Transações, gastos por categoria, **importar extrato** |
+| Metas | Tarefas com prioridade e metas com progresso |
+| Rotina | Hábitos diários e sequência de dias |
+| Estudos | Matérias, meta semanal, Pomodoro |
 
-## Como usar
+## Importar extrato
+Aceita **OFX**, **CSV**, **PDF** ou texto colado. O app lê data, descrição e valor,
+sugere a categoria e marca itens repetidos. Quando você troca uma categoria, ele aprende.
 
-**No PC:** abra `index.html` no navegador.
+## Usar no celular
+GitHub → Settings → Pages → escolha este branch, pasta `/ (root)`. Abra o link no celular e:
+- Android: menu ⋮ → **Instalar app**
+- iPhone: Compartilhar → **Adicionar à Tela de Início**
 
-**No celular:** publique no GitHub Pages
-1. GitHub → *Settings* → *Pages*
-2. Source: branch deste repositório, pasta `/ (root)`
-3. Abra o link gerado no celular
-4. Android: menu ⋮ → **Instalar app** · iPhone: Compartilhar → **Adicionar à Tela de Início**
-
-> ⚠️ Os dados ficam **só no aparelho**. Use *Backup → Exportar* para passar de um aparelho para outro.
+> Os dados ficam **só no aparelho**. Use **Backup** para levar para outro aparelho.
